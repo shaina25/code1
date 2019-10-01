@@ -1,0 +1,138 @@
+#include <bits/stdc++.h> 
+#define ll long long int 
+#define MAX 100005 
+using namespace std; 
+vector<int> adjacent[MAX]; 
+bool visited[MAX]; 
+  
+// To store the required nodes 
+int startnode, endnode, thirdnode; 
+  
+int maxi = -1, N; 
+  
+// Parent array to retrace the nodes 
+int parent[MAX]; 
+  
+// Visited array to prevent DFS 
+// in direction on Diameter path 
+bool vis[MAX]; 
+  
+// DFS function to find the startnode 
+void dfs(int u, int count) 
+{ 
+    visited[u] = true; 
+    int temp = 0; 
+    for (int i = 0; i < adjacent[u].size(); i++) { 
+        if (!visited[adjacent[u][i]]) { 
+            temp++; 
+            dfs(adjacent[u][i], count + 2); 
+        } 
+    } 
+  
+    if (temp == 0) { 
+        if (maxi < count) { 
+            maxi = count; 
+            startnode = u; 
+        } 
+    } 
+} 
+  
+// DFS function to find the endnode 
+// of diameter and maintain the parent array 
+void dfs1(int u, int count) 
+{ 
+    visited[u] = true; 
+    int temp = 0; 
+    for (int i = 0; i < adjacent[u].size(); i++) { 
+        if (!visited[adjacent[u][i]]) { 
+            temp++; 
+            parent[adjacent[u][i]] = u; 
+            dfs1(adjacent[u][i], count + 1); 
+        } 
+    } 
+  
+    if (temp == 0) { 
+        if (maxi < count) { 
+            maxi = count; 
+            endnode = u; 
+        } 
+    } 
+} 
+  
+// DFS function to find the end node 
+// of the Longest Branch to Diameter 
+void dfs2(int u, int count) 
+{ 
+    visited[u] = true; 
+    int temp = 0; 
+    for (int i = 0; i < adjacent[u].size(); i++) { 
+        if (!visited[adjacent[u][i]] 
+            && !vis[adjacent[u][i]]) { 
+            temp++; 
+            dfs2(adjacent[u][i], count + 1); 
+        } 
+    } 
+    if (temp == 0) { 
+        if (maxi < count) { 
+            maxi = count; 
+            thirdnode = u; 
+        } 
+    } 
+} 
+  
+// Function to find the required nodes 
+void findNodes() 
+{ 
+    // To find start node of diameter 
+    dfs(1, 0); 
+  
+    for (int i = 0; i <= N; i++) 
+        visited[i] = false; 
+  
+    maxi = -1; 
+  
+    // To find end node of diameter 
+    dfs1(startnode, 0); 
+  
+    for (int i = 0; i <= N; i++) 
+        visited[i] = false; 
+  
+    // x is the end node of diameter 
+    int x = endnode; 
+    vis[startnode] = true; 
+  
+    // Mark all the nodes on diameter 
+    // using back tracking 
+    while (x != startnode) { 
+        vis[x] = true; 
+        x = parent[x]; 
+    } 
+  
+    maxi = -1; 
+  
+    // Find the end node of longest 
+    // branch to diameter 
+    for (int i = 1; i <= N; i++) { 
+        if (vis[i]) 
+            dfs2(i, 0); 
+    } 
+} 
+  
+// Driver code 
+int main() 
+{ 
+    N = 4; 
+    adjacent[1].push_back(2); 
+    adjacent[2].push_back(1); 
+    adjacent[1].push_back(3); 
+    adjacent[3].push_back(1); 
+    adjacent[1].push_back(4); 
+    adjacent[4].push_back(1); 
+  
+    findNodes(); 
+  
+    cout << "(" << startnode << ", " << endnode 
+         << ", " << thirdnode << ")"; 
+  
+    return 0; 
+} 
